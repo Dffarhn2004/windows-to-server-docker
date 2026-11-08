@@ -1,0 +1,28 @@
+# Copy to projects/<name>/compose.yaml and adjust project, image, port, host, env.
+# Example only: image is a placeholder and is NOT deployable as written.
+name: REPLACE-project-name
+services:
+  api:
+    image: REPLACE_YOUR_IMAGE:tag
+    restart: unless-stopped
+    # No `ports:` needed: Traefik discovers the internal service port.
+    networks:
+      - edge
+      - services
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab_edge"
+      - "traefik.http.routers.REPLACE-router.rule=Host(`REPLACE-subdomain.example.com`)"
+      - "traefik.http.routers.REPLACE-router.entrypoints=web"
+      - "traefik.http.services.REPLACE-service.loadbalancer.server.port=8080"
+    environment:
+      WAHA_BASE_URL: http://waha:3000
+      LLM_BASE_URL: http://ai-router:20128/v1
+
+networks:
+  edge:
+    external: true
+    name: homelab_edge
+  services:
+    external: true
+    name: homelab_services

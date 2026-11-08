@@ -1,0 +1,14 @@
+flowchart TB
+  U[Browser / Developer] --> CF[Cloudflare DNS wildcard + HTTPS]
+  CF --> TUN[Cloudflare Tunnel]
+  subgraph WIN[Windows 11 Home / Docker Desktop WSL2]
+    TUN --> TR[Traefik Docker reverse proxy]
+    TR --> HELLO[hello.example.com / Nginx]
+    TR --> STATUS[status.example.com / Nginx]
+    TR --> API[api.example.com / Backend]
+    API --> WAHA[WAHA - Private Docker service]
+    API --> ROUTER[9Router - Private Docker service]
+    API --> PG[(PostgreSQL - Private)]
+    API --> REDIS[(Redis - Private)]
+  end
+  TUN -.-> NOTE[Public apps only. Private services have no exposed ports.]

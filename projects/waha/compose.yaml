@@ -1,0 +1,31 @@
+# OPTIONAL service. Do NOT deploy before configuring credentials in root .env.
+# No ports and no Traefik labels: WAHA is private by default.
+name: homelab-waha
+services:
+  waha:
+    image: devlikeapro/waha:${WAHA_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      WAHA_API_KEY: ${WAHA_API_KEY:?Set a strong WAHA_API_KEY in root .env}
+      WAHA_DASHBOARD_ENABLED: "true"
+      WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME:?Set WAHA dashboard username}
+      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD:?Set WAHA dashboard password}
+      WHATSAPP_SWAGGER_ENABLED: "false"
+    volumes:
+      - waha-sessions:/app/.sessions
+      - waha-media:/app/.media
+    networks:
+      services:
+        aliases:
+          - waha
+
+volumes:
+  waha-sessions:
+    name: homelab_waha_sessions
+  waha-media:
+    name: homelab_waha_media
+
+networks:
+  services:
+    external: true
+    name: homelab_services

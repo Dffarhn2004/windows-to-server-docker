@@ -1,0 +1,63 @@
+name: homelab-infra
+
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      CONTAINERS: "1"
+      EVENTS: "1"
+      INFO: "1"
+      NETWORKS: "1"
+      PING: "1"
+      VERSION: "1"
+      POST: "0"
+      AUTH: "0"
+      SECRETS: "0"
+      VOLUMES: "0"
+      IMAGES: "0"
+      BUILD: "0"
+      EXEC: "0"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker-control
+    # Deliberately NO host ports or connection to the public-facing edge network.
+
+  traefik:
+    image: traefik:v3.7.17
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.endpoint=tcp://docker-socket-proxy:2375
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=homelab_edge
+      - --entrypoints.web.address=:80
+      - --api.dashboard=false
+      - --log.level=INFO
+      - --accesslog=true
+    depends_on:
+      - docker-socket-proxy
+    networks:
+      - edge
+      - docker-control
+    # No public host port: only cloudflared can reach Traefik through Docker DNS.
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Copy .env.example to .env and set TUNNEL_TOKEN}
+    depends_on:
+      - traefik
+    networks:
+      - edge
+
+networks:
+  edge:
+    name: homelab_edge
+    driver: bridge
+  docker-control:
+    internal: true
+    driver: bridge

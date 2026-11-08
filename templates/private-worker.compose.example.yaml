@@ -1,0 +1,15 @@
+# Copy and edit; private workers need neither host ports nor Traefik labels.
+name: REPLACE-private-worker
+services:
+  worker:
+    image: REPLACE_YOUR_WORKER_IMAGE:tag
+    restart: unless-stopped
+    networks:
+      - services
+    environment:
+      WAHA_BASE_URL: http://waha:3000
+      LLM_BASE_URL: http://ai-router:20128/v1
+networks:
+  services:
+    external: true
+    name: homelab_services

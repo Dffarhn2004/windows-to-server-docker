@@ -1,0 +1,15 @@
+sequenceDiagram
+  autonumber
+  participant U as User Browser
+  participant CF as Cloudflare Edge
+  participant C as cloudflared
+  participant T as Traefik
+  participant A as App container
+  U->>CF: https://hello.example.com
+  CF->>C: Tunnel request (outbound connection)
+  C->>T: HTTP request + Host header
+  T->>A: Route by Host label, internal port 80
+  A-->>T: HTTP response
+  T-->>C: HTTP response
+  C-->>CF: Tunnel response
+  CF-->>U: HTTPS response

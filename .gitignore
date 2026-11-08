@@ -1,0 +1,20 @@
+# NEVER commit real secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+**/secrets/
+**/.sessions/
+**/.media/
+**/data/
+**/backups/
+backups/
+*.sqlite
+*.db
+.DS_Store
+Thumbs.db

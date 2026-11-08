@@ -1,0 +1,32 @@
+# OPTIONAL service. Verify version/config upstream before production.
+# Internal Docker network only; no host ports and no Traefik labels.
+name: homelab-9router
+services:
+  router:
+    image: decolua/9router:${ROUTER_IMAGE_TAG:-0.5.112}
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /app/data
+      PORT: "20128"
+      HOSTNAME: 0.0.0.0
+      NODE_ENV: production
+      REQUIRE_API_KEY: "true"
+      JWT_SECRET: ${ROUTER_JWT_SECRET:?Set ROUTER_JWT_SECRET in root .env}
+      API_KEY_SECRET: ${ROUTER_API_KEY_SECRET:?Set ROUTER_API_KEY_SECRET in root .env}
+      MACHINE_ID_SALT: ${ROUTER_MACHINE_ID_SALT:?Set ROUTER_MACHINE_ID_SALT in root .env}
+      INITIAL_PASSWORD: ${ROUTER_INITIAL_PASSWORD:?Set ROUTER_INITIAL_PASSWORD in root .env}
+    volumes:
+      - router-data:/app/data
+    networks:
+      services:
+        aliases:
+          - ai-router
+
+volumes:
+  router-data:
+    name: homelab_9router_data
+
+networks:
+  services:
+    external: true
+    name: homelab_services

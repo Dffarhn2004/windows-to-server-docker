@@ -1,0 +1,21 @@
+name: homelab-hello
+
+services:
+  hello:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./www/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - edge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab_edge"
+      - "traefik.http.routers.homelab-hello.rule=Host(`${HELLO_HOST:?Set HELLO_HOST in root .env}`)"
+      - "traefik.http.routers.homelab-hello.entrypoints=web"
+      - "traefik.http.services.homelab-hello.loadbalancer.server.port=80"
+
+networks:
+  edge:
+    external: true
+    name: homelab_edge
