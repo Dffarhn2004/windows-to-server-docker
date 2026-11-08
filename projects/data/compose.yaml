@@ -1,0 +1,44 @@
+# OPTIONAL PostgreSQL + Redis. No public ports or Traefik labels.
+# Configure secrets locally before deploying.
+name: homelab-data
+services:
+  postgres:
+    image: postgres:${POSTGRES_IMAGE_TAG:-17-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong POSTGRES_PASSWORD in root .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      services:
+        aliases: [postgres]
+
+  redis:
+    image: redis:${REDIS_IMAGE_TAG:-7.4-alpine}
+    restart: unless-stopped
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set a strong REDIS_PASSWORD in root .env}
+    volumes:
+      - redis-data:/data
+    networks:
+      services:
+        aliases: [redis]
+
+volumes:
+  postgres-data:
+    name: homelab_postgres_data
+  redis-data:
+    name: homelab_redis_data
+
+networks:
+  services:
+    external: true
+    name: homelab_services

@@ -11,7 +11,7 @@ id_ed25519*
 **/secrets/
 **/.sessions/
 **/.media/
-**/data/
+/data/
 **/backups/
 backups/
 *.sqlite

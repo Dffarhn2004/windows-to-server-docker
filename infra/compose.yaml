@@ -2,7 +2,7 @@ name: homelab-infra
 
 services:
   docker-socket-proxy:
-    image: tecnativa/docker-socket-proxy:latest
+    image: tecnativa/docker-socket-proxy:v0.5.0
     restart: unless-stopped
     environment:
       CONTAINERS: "1"
@@ -44,7 +44,7 @@ services:
     # No public host port: only cloudflared can reach Traefik through Docker DNS.
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.10.7
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:

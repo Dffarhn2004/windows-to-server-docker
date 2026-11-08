@@ -3,7 +3,7 @@
 name: homelab-waha
 services:
   waha:
-    image: devlikeapro/waha:${WAHA_IMAGE_TAG:-latest}
+    image: devlikeapro/waha:${WAHA_IMAGE_TAG:-latest-2026.10.1}
     restart: unless-stopped
     environment:
       WAHA_API_KEY: ${WAHA_API_KEY:?Set a strong WAHA_API_KEY in root .env}
