@@ -22,6 +22,8 @@ Script menolak overwrite jika repository sudah memiliki tracked files, dan tidak
 - **WAHA, 9Router, serta PostgreSQL/Redis** tersedia sebagai Compose opsional tanpa membuka port host.
 - Dokumentasi Markdown untuk instalasi, keamanan, testing, backup, migrasi laptop, dan handoff agent.
 
+> **Belum punya domain / laptop baru?** Ikuti `docs/18-QUICKSTART-LAPTOP-BARU.md` (mode uji dengan URL acak Quick Tunnel, tanpa token asli).
+
 ## Quick start — PowerShell Windows
 
 1. Install WSL2 + Docker Desktop, aktifkan Linux containers. Baca `docs/02-WINDOWS-SETUP.md`.
