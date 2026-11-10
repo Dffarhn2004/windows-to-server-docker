@@ -4,6 +4,7 @@ param(
     [string]$Service
 )
 $ErrorActionPreference = 'Stop'
+if ($PSVersionTable.PSVersion.Major -lt 6) { $ErrorActionPreference = 'Continue' } # PS 5.1 treats docker stderr as terminating
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $root
 if (-not (Test-Path '.env')) { throw 'Copy .env.example to .env first.' }

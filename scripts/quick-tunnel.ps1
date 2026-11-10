@@ -7,6 +7,7 @@ param(
     [switch]$Stop
 )
 $ErrorActionPreference = 'Stop'
+if ($PSVersionTable.PSVersion.Major -lt 6) { $ErrorActionPreference = 'Continue' } # PS 5.1 treats docker stderr as terminating
 $name = 'homelab-quick-tunnel'
 $image = 'cloudflare/cloudflared:2026.10.7'
 

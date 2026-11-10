@@ -3,6 +3,7 @@ param(
     [string]$OutputDir = 'backups'
 )
 $ErrorActionPreference = 'Stop'
+if ($PSVersionTable.PSVersion.Major -lt 6) { $ErrorActionPreference = 'Continue' } # PS 5.1 treats docker stderr as terminating
 if ($Volume -notmatch '^[a-zA-Z0-9][a-zA-Z0-9_.-]*$') { throw 'Nama volume tidak valid.' }
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $dest = Join-Path $root $OutputDir

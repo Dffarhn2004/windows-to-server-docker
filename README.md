@@ -1,6 +1,6 @@
 # Windows 11 Home Homelab — Docker + Cloudflare + Traefik
 
-> Paket starter yang bisa diteruskan ke coding agent berikutnya. **Belum diuji end-to-end di laptop pengguna.** Dua aplikasi demo runnable; integrasi WAHA dan 9Router opsional dan dipasang setelah pemeriksaan kredensial.
+> Paket starter yang bisa diteruskan ke coding agent berikutnya. Mode uji lokal (Traefik + Quick Tunnel `hello`) sudah dijalankan pada 2026-11-11, lalu dimatikan. Tunnel domain asli, WAHA, dan 9Router belum dipasang.
 
 ## Publikasi ke GitHub (Windows)
 

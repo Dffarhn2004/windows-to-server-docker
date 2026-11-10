@@ -1,68 +1,141 @@
-# 18 — Panduan langkah demi langkah: laptop kosong (tanpa domain dulu)
+# 18 — Laptop baru, langkah demi langkah
 
-Tujuan: membuktikan Docker + Traefik + demo app berjalan di laptop baru, memakai URL acak Cloudflare Quick Tunnel. Tanpa akun, domain, atau token asli. Setelah punya domain, lanjut ke `docs/03-CLOUDFLARE.md`.
+Gunakan panduan ini saat memindahkan homelab ke laptop Windows lain.
 
-> Status: panduan ini belum diuji end-to-end. Catat hasil nyata di `docs/00-HANDOFF.md`.
+Diuji pada 2026-11-11 di Windows 11 dengan Docker Desktop 4.95.0, Compose v5.6.0, dan WSL2. Yang lolos: infra + `hello` + `status` naik, Traefik internal mengembalikan 200/200/404, dan Quick Tunnel `hello` tampil di browser. Tunnel bernama dengan domain asli belum diuji.
 
-## 1. Install prasyarat (sekali)
-1. Install **Git for Windows**.
-2. Install **Docker Desktop** (WSL2 backend, Linux containers). Jika diminta, jalankan `wsl --install` di PowerShell Admin lalu restart.
-3. Docker Desktop > Settings > General: aktifkan *Start Docker Desktop when you sign in*.
-4. Windows: matikan sleep saat dicolok listrik.
-5. Buka PowerShell baru dan cek:
-   ```powershell
-   docker version
-   docker compose version
-   ```
+## Yang dibawa ke laptop baru
 
-## 2. Ambil project
+Salin **folder proyek ini**, termasuk `scripts/`. Perbaikan di skrip itu perlu: Windows PowerShell 5.1 menganggap pesan stderr Docker sebagai error fatal, sehingga skrip lama berhenti pada `network homelab_services not found`.
+
+Jangan mengandalkan `git clone` dari GitHub sebelum perbaikan skrip itu di-push. Jangan ikut menyalin `.env` lewat Git, dan jangan commit `.env`.
+
+Di laptop baru, mulai dari dua demo saja. WAHA, 9Router, dan database menunggu secret sungguhan. Lihat `docs/06-WAHA-9ROUTER.md` dan `docs/17-DATABASE-REDIS.md` nanti.
+
+## A. Pasang Docker (sekali)
+
+1. Install Docker Desktop untuk Windows. Pilih backend **WSL2** dan container **Linux**.
+2. Jika installer meminta WSL, jalankan PowerShell sebagai Administrator:
+
 ```powershell
-cd C:\
-git clone https://github.com/Dffarhn2004/windows-to-server-docker.git homelab
-cd homelab
+wsl --install --no-distribution
+wsl --update
 ```
 
-## 3. Buat `.env` untuk mode uji
+Restart jika diminta. Tidak perlu memasang distro Ubuntu terpisah. Docker Desktop memakai WSL-nya sendiri.
+
+3. Buka Docker Desktop sampai engine-nya siap. Di Settings > General, aktifkan *Start Docker Desktop when you sign in*.
+4. Saat laptop dipakai sebagai server, matikan sleep Windows, termasuk saat tutup layar.
+5. Buka PowerShell baru dan pastikan ketiga perintah ini berhasil:
+
 ```powershell
+docker version
+docker compose version
+wsl --status
+```
+
+`docker version` harus menampilkan `OS/Arch: linux/amd64` pada bagian Server. Context-nya `desktop-linux`.
+
+## B. Siapkan proyek dan `.env` uji
+
+1. Letakkan folder proyek di path pendek, misalnya `C:\homelab`.
+2. Di PowerShell, masuk ke folder itu lalu buat env lokal:
+
+```powershell
+cd C:\homelab
 Copy-Item .env.example .env
 notepad .env
 ```
-Ubah hanya baris berikut (domain contoh boleh dibiarkan):
+
+3. Ubah hanya baris token menjadi:
+
 ```
 TUNNEL_TOKEN=dummy-token-untuk-uji-lokal
 ```
-Token palsu ini membuat cloudflared utama gagal terhubung. Itu normal dan tidak berbahaya selama mode uji. Jangan isi secret WAHA/9Router/DB sekarang.
 
-## 4. Nyalakan infra dan demo
+`ROOT_DOMAIN`, `HELLO_HOST`, dan `STATUS_HOST` boleh tetap `example.com` untuk mode uji. Jangan mengganti secret WAHA, 9Router, atau database.
+
+Token palsu membuat container `cloudflared` utama terus restart. Itu diharapkan, dan tidak menghalangi Quick Tunnel.
+
+## C. Nyalakan infra dan dua demo
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start-infra.ps1 -WithExamples
 ```
-Cek dengan `docker ps`: kolom PORTS tidak boleh berisi `0.0.0.0:`.
 
-## 5. Uji routing internal
+Tunggu sampai image selesai diunduh. Lalu cek:
+
+```powershell
+docker ps --filter name=homelab-
+```
+
+Yang harus terlihat Up: `docker-socket-proxy`, `traefik`, `hello`, dan `status`. `cloudflared` utama boleh berstatus Restarting. Kolom PORTS tidak boleh berisi `0.0.0.0`. Tulisan `80/tcp` atau `2375/tcp` tanpa alamat host artinya port itu hanya ada di dalam Docker.
+
+## D. Uji routing Traefik di dalam Docker
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\test-routing.ps1
 ```
-Harus tampil PASS 200 untuk `hello` dan `status`, dan PASS 404 untuk unknown host.
 
-## 6. Buka lewat internet dengan Quick Tunnel
+Hasil yang benar:
+
+- `hello.example.com` → `PASS - HTTP 200`
+- `status.example.com` → `PASS - HTTP 200`
+- `unknown.invalid` → `PASS - HTTP 404`
+
+Tes ini yang membuktikan dua aplikasi berbeda dipilih lewat header Host. Quick Tunnel di langkah berikutnya tidak melewati pemilihan host Traefik.
+
+## E. Buka satu aplikasi ke internet, tanpa domain
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\quick-tunnel.ps1 -Target hello
 ```
-Buka URL `https://xxxx.trycloudflare.com` yang tercetak. Untuk app lain: `-Target status`. Satu tunnel hanya melayani satu app, dan URL berubah setiap dijalankan.
 
-Matikan setelah selesai:
+Buka URL `https://....trycloudflare.com` yang tercetak. Halaman harus menampilkan **Hello dari Docker!**
+
+Satu Quick Tunnel hanya melayani satu aplikasi, dan URL berubah setiap tunnel dinyalakan ulang. Untuk `status`, hentikan tunnel yang ada lalu jalankan `-Target status`. Jangan mengarahkan Quick Tunnel ke WAHA, 9Router, atau database.
+
+## F. Matikan setelah uji
+
+Urutan ini sudah dipakai pada 2026-11-11. Container berhenti, volume tidak dihapus:
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\quick-tunnel.ps1 -Stop
-```
-
-## 7. Berhenti / bersih-bersih
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\stop-infra.ps1
 docker compose --env-file .env -f projects/hello/compose.yaml stop
 docker compose --env-file .env -f projects/status/compose.yaml stop
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-infra.ps1
 ```
-Jangan memakai `down -v` jika sudah ada data penting.
 
-## 8. Lanjut ke produksi
-Beli domain murah, tambahkan ke Cloudflare, buat tunnel (token asli), published app `*` ke `http://traefik:80`, dan CNAME wildcard. Ganti `TUNNEL_TOKEN`, `ROOT_DOMAIN`, `HELLO_HOST`, `STATUS_HOST` di `.env`, lalu jalankan ulang `start-infra.ps1`. Detail: `docs/03-CLOUDFLARE.md`.
+`docker ps -a --filter name=homelab-` boleh masih menampilkan container berstatus `Exited`. Itu sisa container yang di-stop, bukan layanan yang masih berjalan. Jangan memakai `docker compose down -v`.
+
+## G. Nanti, setelah punya domain
+
+Bagian ini belum diuji di laptop sumber. Tunnel Cloudflare-nya gratis, tetapi domain harus kamu kelola di Cloudflare.
+
+1. Tambahkan domain ke Cloudflare dan tunggu sampai statusnya aktif.
+2. Buat tunnel **remotely managed**. Salin token ke `.env` sebagai `TUNNEL_TOKEN`, menggantikan token palsu. Jangan mengirim token itu lewat chat atau Git.
+3. Ubah juga:
+
+```
+ROOT_DOMAIN=domainmu.com
+HELLO_HOST=hello.domainmu.com
+STATUS_HOST=status.domainmu.com
+```
+
+4. Di tunnel, buat published application hostname `*.domainmu.com`, service HTTP, URL `http://traefik:80`. Pastikan DNS memiliki CNAME `*` ke tunnel dan statusnya Proxied. Jangan membuat CNAME ganda. Apex `domainmu.com` tidak ikut wildcard.
+5. Nyalakan ulang:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-infra.ps1 -WithExamples
+```
+
+`cloudflared` utama sekarang harus Up, bukan Restarting. Dari internet, `https://hello.domainmu.com` dan `https://status.domainmu.com` harus menampilkan halaman dari container yang berbeda. Detail ada di `docs/03-CLOUDFLARE.md`.
+
+Quick Tunnel tidak diperlukan lagi setelah tunnel bernama sehat.
+
+## Jangan dilakukan
+
+- Jangan `docker compose down -v` pada data yang ingin dipertahankan.
+- Jangan membuka port host untuk Traefik, WAHA, 9Router, PostgreSQL, atau Redis.
+- Jangan menyalakan layanan opsional selama secret-nya masih `REPLACE_WITH_...`.
+- Jangan commit `.env`, token, session WhatsApp, atau password.
