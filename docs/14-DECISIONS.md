@@ -17,3 +17,14 @@ Status: Accepted untuk cold migration. Dua laptop boleh aktif untuk skenario HA 
 
 ## ADR-006: Compose per project
 Status: Accepted. Infastruktur + dua demo + tiap optional service file terpisah. Menambah project tidak perlu mengedit Compose utama; cukup join shared network dan buat Traefik labels.
+
+## ADR-007: Homelab Control Center P0-A/B (control plane baca-saja)
+Status: Accepted untuk Gate P0-A dan P0-B. P0-C/P0-D belum dibuka.
+
+Audit baca-saja 2026-11-11 (docker ps, tanpa start/stop): Docker Desktop 4.95.0, engine 29.8.2, Compose v5.6.0. Container homelab yang Up: `homelab-infra-docker-socket-proxy-1`, `homelab-infra-traefik-1`, `homelab-infra-cloudflared-1`, `homelab-hello-hello-1`, `homelab-status-status-1`, `homelab-waha-waha-1`. Network repo tetap `homelab_edge` dan `homelab_services`. Network `homelab_proxy` ada di host tetapi tidak dipakai. CVAT Exited. `9router` Up dan sudah mem-publish `127.0.0.1` sebelum HCC; tidak diubah.
+
+- **Auth UI:** sesi admin loopback, cookie HttpOnly `SameSite=Strict`, password dari `HCC_ADMIN_PASSWORD`, pembanding constant-time. Verifier JWT Cloudflare Access hanya interface. Tidak ada hostname publik dashboard.
+- **Agent:** proses Go di host Windows, poll keluar ke Control API dengan HMAC-SHA256, timestamp, dan nonce. Next.js dan Go API tidak memegang `docker.sock`. Socket proxy Traefik bukan jalur deploy.
+- **Secret:** rahasia agent di env atau file di luar Git, bukan plaintext SQLite. Token manajemen Cloudflare (`HCC_CF_API_TOKEN`) terpisah dari `TUNNEL_TOKEN` dan tidak disimpan di database. Tanpa token itu, integrasi tetap read-only dan berstatus tidak dikonfigurasi.
+- **Kepemilikan:** container tanpa label `hcc.managed=true` adalah Unmanaged. HCC tidak mengadopsi `hello.imuii.id`, `waha-v2.imuii.id`, `api.imuii.id`, atau record `A *`. Fase ini tidak menulis DNS, Tunnel, atau Access.
+- **Status:** label Running hanya dari state Docker `running`. Label Healthy hanya dari healthcheck Docker. Tunnel tidak ditandai Healthy hanya karena container cloudflared Up.

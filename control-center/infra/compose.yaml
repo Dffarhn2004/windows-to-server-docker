@@ -1,0 +1,46 @@
+name: hcc
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: services/api/Dockerfile
+    environment:
+      HCC_HTTP_ADDR: 0.0.0.0:8080
+      HCC_ALLOW_CONTAINER_BIND: "1"
+      HCC_DB_PATH: /data/hcc.sqlite
+      HCC_ADMIN_PASSWORD: ${HCC_ADMIN_PASSWORD:?set HCC_ADMIN_PASSWORD}
+      HCC_AGENT_SECRET: ${HCC_AGENT_SECRET:?set HCC_AGENT_SECRET}
+      HCC_CF_API_TOKEN: ${HCC_CF_API_TOKEN:-}
+      HCC_CF_ACCOUNT_ID: ${HCC_CF_ACCOUNT_ID:-}
+      HCC_CF_ZONE_ID: ${HCC_CF_ZONE_ID:-}
+      HCC_CF_TUNNEL_ID: ${HCC_CF_TUNNEL_ID:-}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - hcc_data:/data
+    networks:
+      - hcc
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    environment:
+      API_INTERNAL_URL: http://api:8080
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api
+    networks:
+      - hcc
+    restart: unless-stopped
+
+networks:
+  hcc:
+    name: hcc_internal
+    driver: bridge
+
+volumes:
+  hcc_data:

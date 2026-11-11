@@ -1,0 +1,11 @@
+go 1.23.5
+
+use (
+	./pkg/classify
+	./pkg/manifest
+	./pkg/observe
+	./pkg/redact
+	./pkg/sign
+	./services/api
+	./agent
+)

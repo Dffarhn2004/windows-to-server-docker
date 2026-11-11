@@ -16,5 +16,13 @@ id_ed25519*
 backups/
 *.sqlite
 *.db
+*.sqlite-wal
+*.sqlite-shm
+managed-projects/
+control-center/**/node_modules/
+control-center/**/.next/
+control-center/**/data/
+control-center/**/agent-secret
+control-center/**/*secret*.txt
 .DS_Store
 Thumbs.db
