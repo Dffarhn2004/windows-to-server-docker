@@ -31,6 +31,8 @@ Isi log dengan format:
 
 2026-11-11 | Agent | Mematikan stack uji dan menulis ulang `docs/18-QUICKSTART-LAPTOP-BARU.md` dari perintah yang benar-benar lolos. | `quick-tunnel.ps1 -Stop`; `docker compose stop` untuk hello dan status; `stop-infra.ps1`; `docker ps -a --filter name=homelab-`. | Quick tunnel hilang. Lima container homelab Exited. Volume tidak dihapus. | Untuk menyalakan lagi, ikuti bagian C–E di `docs/18`. Jangan `down -v`.
 
+2026-11-11 | Agent | Menyiapkan hostname dashboard: `WAHA_HOST` ke WAHA port 3000 dan `ROUTER_HOST` ke 9Router port 20128. Tanpa `ports:` host. Secret placeholder tidak dijalankan. | `docker compose config --quiet` untuk `projects/waha/compose.yaml` dan `projects/9router/compose.yaml` dengan `.env.example` dan `.env` lokal. | Config valid. Router `Host(waha-admin.example.com)` dan `Host(ai.example.com)`. Container tidak di-start. | Rollback: kembalikan dua compose itu ke network `homelab_services` saja dan hapus label Traefik. Jangan `down -v` jika volume sesi sudah terisi.
+
 ## Acceptance criteria
 Dua subdomain `hello.*` dan `status.*` berjalan di dua service berbeda lewat tunnel yang sama; unknown host tidak dilayani; WAHA/9Router tanpa published host ports; no secrets committed.
 

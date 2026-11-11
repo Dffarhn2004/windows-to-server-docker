@@ -7,7 +7,7 @@ Membantu mengimplementasikan homelab Windows 11 Home + Docker Desktop WSL2 + Clo
 1. Tidak menggunakan VirtualBox/Hyper-V VM terpisah. Docker Desktop WSL2 tetap boleh menggunakan virtualisasi internalnya.
 2. Domain publik di Cloudflare; wildcard tunnel mengarah ke `http://traefik:80`, bukan ke masing-masing container.
 3. Traefik `exposedByDefault=false`. Hanya aplikasi yang **secara eksplisit** diberi label dapat publik.
-4. Private WAHA, 9Router, database, cache **tidak** diberi `ports:` atau labels publik.
+4. Database, cache, WAHA, dan 9Router **tidak** diberi `ports:` host. Dashboard WAHA dan 9Router boleh punya label Traefik hanya untuk `WAHA_HOST` dan `ROUTER_HOST`. Login aplikasi tetap wajib. Jangan nyalakan keduanya selama secret masih placeholder.
 5. Jangan pernah melakukan commit, mencetak log, atau menampilkan nilai nyata `TUNNEL_TOKEN`, API key, password, auth session WAHA, ataupun 9Router secret.
 6. Jangan memberikan mount Docker socket penuh ke aplikasi user/developer. Traefik memakai socket proxy yang dibatasi.
 7. Selalu tulis langkah backup/rollback sebelum mengubah volumes dan data aktif. Jangan otomatis menghapus volumes.

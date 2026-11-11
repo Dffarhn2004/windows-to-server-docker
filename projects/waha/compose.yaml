@@ -1,5 +1,6 @@
-# OPTIONAL service. Do NOT deploy before configuring credentials in root .env.
-# No ports and no Traefik labels: WAHA is private by default.
+# OPTIONAL. Fill real secrets in the root .env before starting.
+# No host ports. The dashboard is reached only through Traefik at WAHA_HOST.
+# Other containers keep using http://waha:3000 on homelab_services.
 name: homelab-waha
 services:
   waha:
@@ -11,13 +12,25 @@ services:
       WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME:?Set WAHA dashboard username}
       WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD:?Set WAHA dashboard password}
       WHATSAPP_SWAGGER_ENABLED: "false"
+      WAHA_PUBLIC_URL: https://${WAHA_HOST:?Set WAHA_HOST in root .env}
+      WAHA_BASE_URL: https://${WAHA_HOST:?Set WAHA_HOST in root .env}
     volumes:
       - waha-sessions:/app/.sessions
       - waha-media:/app/.media
     networks:
+      edge: {}
       services:
         aliases:
           - waha
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab_edge"
+      - "traefik.http.routers.homelab-waha.rule=Host(`${WAHA_HOST:?Set WAHA_HOST in root .env}`)"
+      - "traefik.http.routers.homelab-waha.entrypoints=web"
+      - "traefik.http.routers.homelab-waha.priority=100"
+      - "traefik.http.routers.homelab-waha.middlewares=homelab-waha-proto"
+      - "traefik.http.middlewares.homelab-waha-proto.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.services.homelab-waha.loadbalancer.server.port=3000"
 
 volumes:
   waha-sessions:
@@ -26,6 +39,9 @@ volumes:
     name: homelab_waha_media
 
 networks:
+  edge:
+    external: true
+    name: homelab_edge
   services:
     external: true
     name: homelab_services

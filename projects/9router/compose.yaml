@@ -1,5 +1,6 @@
-# OPTIONAL service. Verify version/config upstream before production.
-# Internal Docker network only; no host ports and no Traefik labels.
+# OPTIONAL. Fill real secrets in the root .env before starting.
+# No host ports. The dashboard is reached only through Traefik at ROUTER_HOST.
+# Other containers keep using http://ai-router:20128/v1 on homelab_services.
 name: homelab-9router
 services:
   router:
@@ -11,6 +12,9 @@ services:
       HOSTNAME: 0.0.0.0
       NODE_ENV: production
       REQUIRE_API_KEY: "true"
+      AUTH_COOKIE_SECURE: "true"
+      BASE_URL: http://127.0.0.1:20128
+      NEXT_PUBLIC_BASE_URL: https://${ROUTER_HOST:?Set ROUTER_HOST in root .env}
       JWT_SECRET: ${ROUTER_JWT_SECRET:?Set ROUTER_JWT_SECRET in root .env}
       API_KEY_SECRET: ${ROUTER_API_KEY_SECRET:?Set ROUTER_API_KEY_SECRET in root .env}
       MACHINE_ID_SALT: ${ROUTER_MACHINE_ID_SALT:?Set ROUTER_MACHINE_ID_SALT in root .env}
@@ -18,15 +22,28 @@ services:
     volumes:
       - router-data:/app/data
     networks:
+      edge: {}
       services:
         aliases:
           - ai-router
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab_edge"
+      - "traefik.http.routers.homelab-9router.rule=Host(`${ROUTER_HOST:?Set ROUTER_HOST in root .env}`)"
+      - "traefik.http.routers.homelab-9router.entrypoints=web"
+      - "traefik.http.routers.homelab-9router.priority=100"
+      - "traefik.http.routers.homelab-9router.middlewares=homelab-9router-proto"
+      - "traefik.http.middlewares.homelab-9router-proto.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.services.homelab-9router.loadbalancer.server.port=20128"
 
 volumes:
   router-data:
     name: homelab_9router_data
 
 networks:
+  edge:
+    external: true
+    name: homelab_edge
   services:
     external: true
     name: homelab_services

@@ -61,7 +61,7 @@ docker compose --env-file .env -f infra/compose.yaml ps
 
 ## Jika memerlukan WAHA / 9Router
 
-Pelajari `docs/06-WAHA-9ROUTER.md` dan `docs/17-DATABASE-REDIS.md`, isi semua env secret, lalu jalankan `scripts/start-optional.ps1 -Service waha`, `-Service 9router`, atau `-Service data` sesuai kebutuhan. Keduanya *private network only*; tidak ada dashboard publik secara default.
+Pelajari `docs/06-WAHA-9ROUTER.md` dan `docs/17-DATABASE-REDIS.md`, isi semua env secret, lalu jalankan `scripts/start-optional.ps1 -Service waha`, `-Service 9router`, atau `-Service data`. Dashboard WAHA ada di `WAHA_HOST` dan 9Router di `ROUTER_HOST`. Tidak ada port host yang dibuka. Database tetap tanpa alamat publik.
 
 ## Dokumentasi untuk agent berikutnya
 
@@ -75,7 +75,7 @@ Pelajari `docs/06-WAHA-9ROUTER.md` dan `docs/17-DATABASE-REDIS.md`, isi semua en
 - Windows + Docker Desktop **bukan VPS Ubuntu penuh**, dan startup Docker Desktop pada Windows Home bergantung pada startup/login pengguna.
 - Templat ini tidak menyediakan remote SSH multi-user dengan privilege separation; desainnya dijelaskan di dokumen keamanan.
 - Wildcard untuk `*.example.com` tidak otomatis menangani apex `example.com`.
-- Cloudflare Access harus diatur jika kelak menerbitkan dashboard admin. **Jangan buka WAHA/9Router langsung.**
+- Dashboard WAHA dan 9Router memakai login aplikasinya sendiri. Tambahkan Cloudflare Access pada dua hostname itu sebelum menganggapnya aman untuk internet.
 - Tidak ada jaminan zero-downtime jika berpindah laptop; semua data persisten harus dimigrasikan dan diuji.
 
 Gunakan Markdown di dalam ZIP sebagai sumber kebenaran teknis. Jangan menganggap token atau domain contoh sebagai nilai riil.

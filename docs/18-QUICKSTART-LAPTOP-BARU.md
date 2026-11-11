@@ -120,7 +120,11 @@ Bagian ini belum diuji di laptop sumber. Tunnel Cloudflare-nya gratis, tetapi do
 ROOT_DOMAIN=domainmu.com
 HELLO_HOST=hello.domainmu.com
 STATUS_HOST=status.domainmu.com
+WAHA_HOST=waha-admin.domainmu.com
+ROUTER_HOST=ai.domainmu.com
 ```
+
+Ganti juga setiap secret `REPLACE_WITH_...` untuk WAHA dan 9Router dengan nilai acak yang panjang. Jangan menempelkan nilai itu ke chat atau Git.
 
 4. Di tunnel, buat published application hostname `*.domainmu.com`, service HTTP, URL `http://traefik:80`. Pastikan DNS memiliki CNAME `*` ke tunnel dan statusnya Proxied. Jangan membuat CNAME ganda. Apex `domainmu.com` tidak ikut wildcard.
 5. Nyalakan ulang:
@@ -132,6 +136,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start-infra.ps1 -WithExamples
 `cloudflared` utama sekarang harus Up, bukan Restarting. Dari internet, `https://hello.domainmu.com` dan `https://status.domainmu.com` harus menampilkan halaman dari container yang berbeda. Detail ada di `docs/03-CLOUDFLARE.md`.
 
 Quick Tunnel tidak diperlukan lagi setelah tunnel bernama sehat.
+
+6. Setelah `hello` dan `status` benar dari internet, nyalakan dua dashboard:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-optional.ps1 -Service waha
+powershell -ExecutionPolicy Bypass -File .\scripts\start-optional.ps1 -Service 9router
+```
+
+Skrip menolak jalan jika secret masih placeholder. Wildcard `*.domainmu.com` sudah mencakup `waha-admin` dan `ai`, jadi tidak perlu tunnel baru.
+
+- `https://waha-admin.domainmu.com` membuka login WAHA. Username dan password ada di `.env`.
+- `https://ai.domainmu.com` membuka login 9Router. Password pertama adalah `ROUTER_INITIAL_PASSWORD`.
+- API untuk aplikasi lain tetap `http://waha:3000` dan `http://ai-router:20128/v1` dari dalam Docker, bukan lewat alamat publik.
+
+Di Cloudflare Zero Trust, buat Access policy untuk dua hostname itu supaya hanya akun kamu yang mencapai halaman login. Bagian dashboard ini belum diuji di laptop sumber karena secret sungguhan belum diisi.
 
 ## Jangan dilakukan
 

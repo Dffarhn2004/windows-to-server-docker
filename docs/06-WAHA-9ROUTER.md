@@ -1,7 +1,12 @@
 # 06 — WAHA dan 9Router sebagai private services
 
 ## Keamanan default
-File `projects/waha/compose.yaml` dan `projects/9router/compose.yaml` adalah **opsional**; tidak dijalankan oleh script `start-infra.ps1`. Tidak ada `ports:` ke host dan tidak ada label Traefik. Mereka bisa dipanggil oleh backend yang terhubung ke `homelab_services`, tetapi tidak diakses langsung dari internet.
+File `projects/waha/compose.yaml` dan `projects/9router/compose.yaml` **opsional** dan tidak dijalankan oleh `start-infra.ps1`. Keduanya tidak membuka port host. Setelah domain dan secret sungguhan diisi, Traefik mengarahkan:
+
+- `https://waha-admin.<domain>` ke dashboard WAHA
+- `https://ai.<domain>` ke dashboard 9Router
+
+Backend lain tetap memanggil `http://waha:3000` dan `http://ai-router:20128/v1` lewat `homelab_services`. Database dan Redis tidak mendapat label publik.
 
 ## WAHA
 Dokumentasi resmi: https://waha.devlike.pro/docs/how-to/security/ dan https://waha.devlike.pro/docs/how-to/storages/
@@ -27,7 +32,7 @@ Proyek 9Router yang dirujuk: https://github.com/decolua/9router ; Docker docs: h
 - `REQUIRE_API_KEY=true` untuk melindungi `/v1/*`.
 - Container alias: `ai-router`, URL internal: `http://ai-router:20128/v1`.
 - Data state 9Router tersimpan di volume `homelab_9router_data` pada `/app/data`.
-- Dashboard tidak dipublish secara default. Jika perlu bootstrap UI, gunakan akses sementara yang hanya terbuka untuk host sendiri dan tutup lagi.
+- Dashboard terbuka di `ROUTER_HOST` lewat Traefik. `REQUIRE_API_KEY=true` tetap melindungi `/v1/*`. `AUTH_COOKIE_SECURE=true` karena pengunjung datang lewat HTTPS Cloudflare.
 
 ```powershell
 docker compose --env-file .env -f projects/9router/compose.yaml config --quiet
