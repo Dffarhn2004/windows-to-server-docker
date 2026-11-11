@@ -1,6 +1,12 @@
 # Windows 11 Home Homelab — Docker + Cloudflare + Traefik
 
-> Paket starter yang bisa diteruskan ke coding agent berikutnya. Mode uji lokal (Traefik + Quick Tunnel `hello`) sudah dijalankan pada 2026-11-11, lalu dimatikan. Tunnel domain asli, WAHA, dan 9Router belum dipasang.
+> **Update 11 Nov 2026 (berdasarkan tes yang dilaporkan pengguna):** Docker + Traefik + remote Tunnel `homelab-docker` aktif; `hello.imuii.id` dapat dibuka; WAHA di `waha-v2.imuii.id` menunjukkan worker connected. Skrip routing internal lulus 200/200/404. Status live harus selalu diperiksa ulang dari host; bukti awal PoC lama ada di dokumen handoff.
+
+## Next project — Homelab Control Center (PRD + Cursor)
+
+**Baca lebih dulu:** [Full PRD](docs/19-HOMELAB-CONTROL-CENTER-PRD.md) → [Cursor Implementation Handoff](docs/20-CURSOR-CONTROL-CENTER-IMPLEMENTATION.md) → [Prompt Agent](NEXT_AGENT_PROMPT.md).
+
+Target: dashboard Next.js + Go untuk melihat host/container, deploy aplikasi dari template aman, manajemen log/operasi, dan provisioning **exact hostname** Cloudflare DNS/Tunnel/Access via agent terkontrol. **Belum diimplementasikan**; dokumen ini adalah rencana. Jangan membuat ulang Traefik/Tunnel, jangan mengubah wildcard DNS karena `A *` masih digunakan VPS.
 
 ## Publikasi ke GitHub (Windows)
 
