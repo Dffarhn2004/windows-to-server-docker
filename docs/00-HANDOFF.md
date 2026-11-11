@@ -2,6 +2,20 @@
 
 **Status pada 2026-11-11:** Mode uji Quick Tunnel sudah dijalankan lalu dimatikan. Container homelab berstatus Exited; volume tidak dihapus. Routing Traefik internal lolos (200/200/404). URL publik sementara hanya sempat membuka `hello`. Tunnel bernama belum dikonfigurasi. Langkah laptop baru ada di `docs/18-QUICKSTART-LAPTOP-BARU.md`.
 
+## Status terbaru — pembaruan 11 November 2026 (berdasarkan terminal & screenshot pengguna)
+
+**Catatan:** Bagian "Status pada 2026-11-11" di bawah adalah snapshot PoC **sebelumnya**, bukan status runtime terbaru. Agent harus memeriksa lagi di mesin.
+
+- Nameserver domain `imuii.id` pindah ke Cloudflare; hasil lookup NS dan `api.imuii.id` menuju VPS dilaporkan benar.
+- Tunnel **remotely managed** bernama `homelab-docker` digunakan oleh `infra/compose.yaml` di Docker Desktop.
+- `scripts/start-infra.ps1 -WithExamples` dilaporkan berhasil menjalankan socket proxy, Traefik, Cloudflared, Hello, dan Status.
+- `scripts/test-routing.ps1`: Hello HTTP 200, Status HTTP 200, unknown host HTTP 404.
+- `https://hello.imuii.id` menampilkan "Hello dari Docker".
+- WAHA existing `projects/waha/compose.yaml` dilaporkan berjalan; `waha-v2.imuii.id/dashboard` dan worker API menampilkan **1 connected**, belum ada bukti sesi WhatsApp aktif.
+- Cloudflare Access app `waha-v2` dengan policy Allow telah dibuat; jangan menghapus/mengubah tanpa approval.
+- Wildcard DNS `A *` tetap dipakai VPS. **Jangan dialihkan ke Tunnel.** Subdomain HCC harus record spesifik.
+- PRD baru: [docs/19-HOMELAB-CONTROL-CENTER-PRD.md](19-HOMELAB-CONTROL-CENTER-PRD.md); Cursor execution: [docs/20-CURSOR-CONTROL-CENTER-IMPLEMENTATION.md](20-CURSOR-CONTROL-CENTER-IMPLEMENTATION.md). **Dashboard belum dibuat.**
+
 ## Objective
 Laptop Windows 11 Home berperan sebagai host multi-project; satu wildcard Cloudflare Tunnel → satu Traefik → container berdasarkan host; WAHA dan 9Router hanya private network; migratable ke laptop lain / Ubuntu VPS.
 
